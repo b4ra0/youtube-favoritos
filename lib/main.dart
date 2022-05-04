@@ -1,19 +1,29 @@
+import 'package:bloc_pattern/bloc_pattern.dart';
+import 'package:favoritos_youtube/api.dart';
+import 'package:favoritos_youtube/blocs/videos_bloc.dart';
 import 'package:favoritos_youtube/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  Api api = Api();
+  api.search("casimiro");
+
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Youtube Favoritos',
-      home: HomeScreen(),
+    return BlocProvider(
+      blocs: [
+        Bloc((i) => VideosBloc()),
+      ],
+      dependencies: [],
+      child: MaterialApp(
+        title: 'Youtube Favoritos',
+        home: HomeScreen(),
+      ),
     );
   }
 }
