@@ -1,6 +1,9 @@
 import 'package:bloc_pattern/bloc_pattern.dart';
+import 'package:favoritos_youtube/blocs/favorite_bloc.dart';
 import 'package:favoritos_youtube/blocs/videos_bloc.dart';
 import 'package:favoritos_youtube/delegates/data_search.dart';
+import 'package:favoritos_youtube/models/video.dart';
+import 'package:favoritos_youtube/screens/favorites_screen.dart';
 import 'package:favoritos_youtube/widgets/video_tile.dart';
 import 'package:flutter/material.dart';
 
@@ -12,6 +15,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final bloc = BlocProvider.getBloc<VideosBloc>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,15 +28,24 @@ class _HomeScreenState extends State<HomeScreen> {
           width: 100,
         ),
         actions: [
-          const Align(
-            child: Text(
-              '0',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          Align(
+            child: StreamBuilder<Map<String, Video>>(
+              stream: BlocProvider.getBloc<FavoriteBloc>().outFav,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Text("${snapshot.data!.length}");
+                } else {
+                  return const Text('0');
+                }
+              },
             ),
             alignment: Alignment.center,
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const FavoritesScreen()));
+            },
             icon: const Icon(Icons.star),
           ),
           IconButton(
@@ -39,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
               String? result =
                   await showSearch(context: context, delegate: DataSearch());
               if (result != null) {
-                BlocProvider.getBloc<VideosBloc>().inSearch.add(result);
+                bloc.inSearch.add(result);
               }
             },
             icon: const Icon(Icons.search),
@@ -47,16 +61,32 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: StreamBuilder(
-        stream: BlocProvider.getBloc<VideosBloc>().outVideos,
-        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot){
-          if(snapshot.hasData){
+        stream: bloc.outVideos,
+        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+          if (snapshot.hasData) {
+            List videos = snapshot.data as List;
             return ListView.builder(
-              itemCount: 10,
-              itemBuilder: (context, index){
-                return VideoTile(snapshot.data![index]);
+              itemCount: videos.length + 1,
+              itemBuilder: (context, index) {
+                if (index < videos.length) {
+                  return VideoTile(snapshot.data[index]);
+                } else {
+                  return Center(
+                    child: IconButton(
+                      onPressed: () {
+                        bloc.inSearch.add(
+                            "");
+                      },
+                      icon: const Icon(
+                        Icons.expand_more,
+                        color: Colors.white,
+                      ),
+                    ),
+                  );
+                }
               },
             );
-          } else{
+          } else {
             return Container();
           }
         },

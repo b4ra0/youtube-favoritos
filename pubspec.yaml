@@ -31,9 +31,9 @@ dependencies:
     sdk: flutter
   youtube_player_flutter:
   http:
-  shared_preferences:
-  rxdart:
-  bloc_pattern:
+  shared_preferences: ^2.0.13
+  rxdart: ^0.27.3
+  bloc_pattern: ^3.0.0
 
 
   # The following adds the Cupertino Icons font to your application.
